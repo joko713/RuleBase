@@ -7,49 +7,107 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-color-light: #e0e7ff;
+            --primary-color-dark: #3730a3;
+            --success-bg: #f0fdf4;
+            --success-border: #22c55e;
+            --info-bg: #eff6ff;
+            --info-border: #3b82f6;
+            --error-bg: #fef2f2;
+            --error-border: #ef4444;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
         }
+
         .step-card {
             display: none;
+            animation: fadeIn 0.5s ease-in-out;
         }
+
         .step-card.active {
             display: block;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .result-box {
-            background-color: #f0fdf4; /* A light green background for success */
-            border-left: 4px solid #22c55e; /* A solid green border */
+            background-color: var(--success-bg);
+            border-left: 4px solid var(--success-border);
         }
         .info-box {
-            background-color: #eff6ff; /* A light blue background */
-            border-left: 4px solid #3b82f6; /* A solid blue border */
+            background-color: var(--info-bg);
+            border-left: 4px solid var(--info-border);
         }
         .error-box {
-            background-color: #fef2f2; /* A light red background */
-            border-left: 4px solid #ef4444; /* A solid red border */
+            background-color: var(--error-bg);
+            border-left: 4px solid var(--error-border);
         }
-        select, button {
+
+        select, button, input[type="number"] {
             cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--primary-color-light);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-color-dark);
+        }
+
+        .progress-bar-bg {
+            background-color: #e5e7eb;
+        }
+        .progress-bar {
+            background-color: var(--primary-color);
+            transition: width 0.4s ease-in-out;
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
+    <div class="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
         <header class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Award & Pay Rate Tool</h1>
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/></svg>
+                Award & Pay Rate Tool
+            </h1>
             <p class="text-gray-500 mt-2">Based on Professional Employees Award [MA000065]</p>
-            <div class="mt-4 p-3 text-sm text-yellow-800 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <strong>Effective Date:</strong> Rates apply from the first full pay period on or after <strong>01 July 2025</strong>.
-            </div>
         </header>
+
+        <!-- Progress Bar -->
+        <div class="w-full mb-8">
+            <div class="flex justify-between mb-1">
+                <span id="progress-text" class="text-sm font-medium text-gray-700">Step 1 of 3</span>
+                <span id="progress-percent" class="text-sm font-medium text-gray-700">0%</span>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-2.5">
+                <div id="progress-bar" class="progress-bar h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+        </div>
 
         <main id="calculator-container">
             <!-- Step 1: IT Employee? -->
             <div id="step-1" class="step-card active space-y-4">
                 <label for="is-it-employee" class="block text-lg font-semibold text-gray-700">1. Is the employee an IT employee?</label>
                 <p class="text-sm text-gray-500">This includes roles like developers, IT support, system analysts, web designers, etc.</p>
-                <select id="is-it-employee" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select id="is-it-employee" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg">
                     <option value="" selected disabled>Select an option...</option>
                     <option value="yes">Yes</option>
                     <option value="no">No</option>
@@ -60,7 +118,7 @@
             <div id="step-it-qualified" class="step-card space-y-4">
                 <label for="is-qualified" class="block text-lg font-semibold text-gray-700">2. Is the IT employee qualified?</label>
                 <p class="text-sm text-gray-500">A "qualified" employee has sufficient qualifications (e.g., relevant university degree) and experience to be classified under the Professional Award.</p>
-                <select id="is-qualified" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select id="is-qualified" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg">
                     <option value="" selected disabled>Select an option...</option>
                     <option value="yes">Yes</option>
                     <option value="no">No</option>
@@ -71,21 +129,27 @@
 
             <!-- Final Result Section -->
             <div id="result-section" class="step-card space-y-6">
-                <h2 class="text-2xl font-bold text-center text-gray-800">Determination Result</h2>
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-gray-800">Determination Result</h2>
+                    <p class="text-gray-500">Based on your selections, here is the likely outcome.</p>
+                </div>
                 <div id="award-result" class="p-4 rounded-lg"></div>
                 
                 <!-- Pay Calculator (for Professional Award) -->
-                <div id="pay-calculator" class="hidden space-y-4 pt-4 border-t">
-                    <h3 class="text-xl font-semibold text-gray-700">Pay Rate Calculator</h3>
+                <div id="pay-calculator" class="hidden space-y-4 pt-6 mt-6 border-t">
+                    <h3 class="text-xl font-semibold text-gray-700 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="8" y2="14"/><line x1="16" y1="18" x2="8" y2="18"/><line x1="10" y1="10" x2="14" y2="10"/></svg>
+                        Pay Rate Calculator
+                    </h3>
                     <div>
                         <label for="classification" class="block font-medium text-gray-700 mb-1">Classification</label>
                         <select id="classification" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg"></select>
                     </div>
                     <div>
                         <label class="block font-medium text-gray-700 mb-1">Employment Type</label>
-                        <div class="flex gap-4">
-                            <label class="flex items-center"><input type="radio" name="employment-type" value="full-time" class="mr-2" checked> Full-time / Part-time</label>
-                            <label class="flex items-center"><input type="radio" name="employment-type" value="casual" class="mr-2"> Casual</label>
+                        <div class="flex gap-4 p-3 bg-gray-50 rounded-lg border">
+                            <label class="flex items-center flex-1"><input type="radio" name="employment-type" value="full-time" class="mr-2" checked> Full-time / Part-time</label>
+                            <label class="flex items-center flex-1"><input type="radio" name="employment-type" value="casual" class="mr-2"> Casual</label>
                         </div>
                     </div>
                     <div>
@@ -103,7 +167,7 @@
                 </div>
 
                 <!-- Allowance Calculator -->
-                <div id="allowance-calculator" class="space-y-4 pt-4 border-t">
+                <div id="allowance-calculator" class="space-y-4 pt-6 mt-6 border-t">
                      <h3 class="text-xl font-semibold text-gray-700">Allowance Calculator</h3>
                      <div class="flex items-center gap-4">
                         <label for="vehicle-km" class="font-medium text-gray-700">Vehicle Allowance ($0.98 per km)</label>
@@ -114,14 +178,16 @@
             </div>
 
             <!-- Restart Button -->
-            <div class="mt-6 text-center">
-                 <button id="restart-btn" class="hidden bg-gray-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-600 transition-colors">Start Over</button>
+            <div class="mt-8 text-center">
+                 <button id="restart-btn" class="hidden btn-primary font-bold py-2 px-6 rounded-lg hover:shadow-lg transition-all flex items-center gap-2 mx-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"/><path d="M21 12A9 9 0 0 0 6 5.3L3 8"/><path d="M21 22v-6h-6"/><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"/></svg>
+                    Start Over
+                 </button>
             </div>
-
         </main>
         
         <footer class="text-center text-xs text-gray-400 mt-8">
-            <p>Disclaimer: This tool provides a summary based on the provided document and is for guidance only. You should always refer to the full terms of the relevant award. We accept no liability for any inaccuracies.</p>
+            <p>Disclaimer: This tool is for guidance only. Always refer to the full terms of the relevant award. We accept no liability for any inaccuracies.</p>
         </footer>
     </div>
 
@@ -147,7 +213,6 @@ const payData = {
         "Experienced medical research employee - level 5": { hourly: 56.38, overtime: 56.38, monSatBefore6am: 70.48, monSatAfter10pm: 70.48, sunday: 84.57, publicHoliday: 84.57 }
     },
     "casual": {
-        // Rates are base * 1.25, penalties applied to loaded rate
         "Graduate professional - level 1.1 - 3 year degree": { hourly: 40.23, overtime: 40.23, monSatBefore6am: 50.29, monSatAfter10pm: 50.29, sunday: 60.35, publicHoliday: 60.35 },
         "Graduate professional - level 1.1 - 4 or 5 year degree": { hourly: 41.26, overtime: 41.26, monSatBefore6am: 51.58, monSatAfter10pm: 51.58, sunday: 61.89, publicHoliday: 61.89 },
         "Graduate professional - level 1.2": { hourly: 41.95, overtime: 41.95, monSatBefore6am: 52.44, monSatAfter10pm: 52.44, sunday: 62.93, publicHoliday: 62.93 },
@@ -180,21 +245,32 @@ const elements = {
     steps: document.querySelectorAll('.step-card'),
     restartBtn: document.getElementById('restart-btn'),
     isItEmployee: document.getElementById('is-it-employee'),
-    isQualified: document.getElementById('is-qualified'),
     awardResult: document.getElementById('award-result'),
     payCalculator: document.getElementById('pay-calculator'),
     payResult: document.getElementById('pay-result'),
     allowanceResult: document.getElementById('allowance-result'),
     vehicleKm: document.getElementById('vehicle-km'),
-    container: document.getElementById('calculator-container')
+    container: document.getElementById('calculator-container'),
+    progressBar: document.getElementById('progress-bar'),
+    progressText: document.getElementById('progress-text'),
+    progressPercent: document.getElementById('progress-percent'),
 };
 
-let currentStep = 1;
+let currentStepNum = 1;
+const totalSteps = 3; // Maximum possible steps
 const state = {};
+
+function updateProgress(step, maxSteps) {
+    const percent = Math.round(((step -1) / maxSteps) * 100);
+    elements.progressBar.style.width = `${percent}%`;
+    elements.progressText.textContent = `Step ${step} of ${maxSteps}`;
+    elements.progressPercent.textContent = `${percent}%`;
+}
 
 function showStep(stepId) {
     elements.steps.forEach(step => step.classList.remove('active'));
     document.getElementById(stepId).classList.add('active');
+    updateProgress(currentStepNum, totalSteps);
 }
 
 function showResult(awardName, description, isProfessional = false) {
@@ -211,10 +287,20 @@ function showResult(awardName, description, isProfessional = false) {
         elements.payCalculator.style.display = 'none';
     }
     showStep('result-section');
-    elements.restartBtn.style.display = 'inline-block';
+    elements.restartBtn.style.display = 'flex';
+    // Final progress update
+    elements.progressBar.style.width = `100%`;
+    elements.progressText.textContent = `Complete`;
+    elements.progressPercent.textContent = `100%`;
 }
 
 function addQuestion(id, label, description, options) {
+    // Remove any dynamically added questions that come after the current one
+    const existingDynamicQuestion = document.getElementById(`step-${id}`);
+    if(existingDynamicQuestion) {
+        existingDynamicQuestion.remove();
+    }
+    
     const newStep = document.createElement('div');
     newStep.id = `step-${id}`;
     newStep.className = 'step-card space-y-4';
@@ -225,9 +311,9 @@ function addQuestion(id, label, description, options) {
     });
 
     newStep.innerHTML = `
-        <label for="select-${id}" class="block text-lg font-semibold text-gray-700">${label}</label>
+        <label for="select-${id}" class="block text-lg font-semibold text-gray-700">${currentStepNum}. ${label}</label>
         <p class="text-sm text-gray-500">${description}</p>
-        <select id="select-${id}" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        <select id="select-${id}" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg">
             ${optionsHtml}
         </select>`;
     
@@ -241,8 +327,7 @@ function addQuestion(id, label, description, options) {
 
 function handleDynamicChange(id, value) {
     state[id] = value;
-    // This is where the decision tree logic for dynamic questions would go.
-    // We'll follow the provided rule base.
+    currentStepNum++;
     
     // Qualified IT Employee Path
     if (id === 'qualified-industry' && value === 'yes') {
@@ -308,8 +393,8 @@ function handleDynamicChange(id, value) {
     }
 }
 
-
 elements.isItEmployee.addEventListener('change', (e) => {
+    currentStepNum = 2;
     if (e.target.value === 'yes') {
         showStep('step-it-qualified');
     } else {
@@ -321,11 +406,12 @@ elements.isItEmployee.addEventListener('change', (e) => {
     }
 });
 
-elements.isQualified.addEventListener('change', (e) => {
+document.getElementById('is-qualified').addEventListener('change', (e) => {
+    currentStepNum = 3;
     if (e.target.value === 'yes') {
         addQuestion(
             'qualified-industry',
-            '3. Does the employer operate in the IT or Telecommunications Services industry?',
+            'Does the employer operate in the IT or Telecommunications Services industry?',
             'This determines industry coverage under the Professional Award.',
             [{ value: 'yes', text: 'Yes' }, { value: 'no', text: 'No' }]
         );
@@ -333,7 +419,7 @@ elements.isQualified.addEventListener('change', (e) => {
     } else {
         addQuestion(
             'unqualified-industry',
-            '3. In which industry does the employer operate?',
+            'In which industry does the employer operate?',
             'This helps determine if another industry award applies to the unqualified IT employee.',
             [
                 { value: 'business', text: 'Business Equipment (selling/installing computers)' },
@@ -354,7 +440,7 @@ function updatePayCalculation() {
     const rate = payData[employmentType]?.[classification]?.[workPeriod];
     
     if (rate) {
-        elements.payResult.innerHTML = `Calculated Hourly Rate: <span class="text-2xl font-bold text-green-700">$${rate.toFixed(2)}</span>`;
+        elements.payResult.innerHTML = `Calculated Hourly Rate: <span class="text-3xl font-bold text-green-700">$${rate.toFixed(2)}</span>`;
         elements.payResult.className = 'p-4 rounded-lg result-box';
     } else {
         elements.payResult.innerHTML = `Rate not found for selected combination.`;
@@ -366,13 +452,12 @@ function updateAllowance() {
     const km = parseFloat(elements.vehicleKm.value) || 0;
     if (km > 0) {
         const allowance = km * 0.98;
-        elements.allowanceResult.innerHTML = `Vehicle Allowance: <span class="text-xl">$${allowance.toFixed(2)}</span>`;
-        elements.allowanceResult.className = 'p-3 rounded-lg result-box';
+        elements.allowanceResult.innerHTML = `Vehicle Allowance: <span class="text-xl font-bold text-indigo-700">$${allowance.toFixed(2)}</span>`;
+        elements.allowanceResult.className = 'p-3 rounded-lg info-box';
     } else {
         elements.allowanceResult.innerHTML = '';
     }
 }
-
 
 document.getElementById('pay-calculator').addEventListener('change', updatePayCalculation);
 elements.vehicleKm.addEventListener('input', updateAllowance);
@@ -381,6 +466,10 @@ elements.restartBtn.addEventListener('click', () => {
     window.location.reload();
 });
 
+// Initial state
+updateProgress(1, totalSteps);
+updatePayCalculation();
 </script>
 </body>
 </html>
+
