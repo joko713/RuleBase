@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Award & Pay Rate Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .step-card {
+            display: none;
+        }
+        .step-card.active {
+            display: block;
+        }
+        .result-box {
+            background-color: #f0fdf4; /* A light green background for success */
+            border-left: 4px solid #22c55e; /* A solid green border */
+        }
+        .info-box {
+            background-color: #eff6ff; /* A light blue background */
+            border-left: 4px solid #3b82f6; /* A solid blue border */
+        }
+        .error-box {
+            background-color: #fef2f2; /* A light red background */
+            border-left: 4px solid #ef4444; /* A solid red border */
+        }
+        select, button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Award & Pay Rate Tool</h1>
+            <p class="text-gray-500 mt-2">Based on Professional Employees Award [MA000065]</p>
+            <div class="mt-4 p-3 text-sm text-yellow-800 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <strong>Effective Date:</strong> Rates apply from the first full pay period on or after <strong>01 July 2025</strong>.
+            </div>
+        </header>
+
+        <main id="calculator-container">
+            <!-- Step 1: IT Employee? -->
+            <div id="step-1" class="step-card active space-y-4">
+                <label for="is-it-employee" class="block text-lg font-semibold text-gray-700">1. Is the employee an IT employee?</label>
+                <p class="text-sm text-gray-500">This includes roles like developers, IT support, system analysts, web designers, etc.</p>
+                <select id="is-it-employee" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="" selected disabled>Select an option...</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+
+            <!-- Step 2: IT - Qualified? -->
+            <div id="step-it-qualified" class="step-card space-y-4">
+                <label for="is-qualified" class="block text-lg font-semibold text-gray-700">2. Is the IT employee qualified?</label>
+                <p class="text-sm text-gray-500">A "qualified" employee has sufficient qualifications (e.g., relevant university degree) and experience to be classified under the Professional Award.</p>
+                <select id="is-qualified" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="" selected disabled>Select an option...</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+            
+            <!-- More IT Questions will be dynamically inserted here by JS -->
+
+            <!-- Final Result Section -->
+            <div id="result-section" class="step-card space-y-6">
+                <h2 class="text-2xl font-bold text-center text-gray-800">Determination Result</h2>
+                <div id="award-result" class="p-4 rounded-lg"></div>
+                
+                <!-- Pay Calculator (for Professional Award) -->
+                <div id="pay-calculator" class="hidden space-y-4 pt-4 border-t">
+                    <h3 class="text-xl font-semibold text-gray-700">Pay Rate Calculator</h3>
+                    <div>
+                        <label for="classification" class="block font-medium text-gray-700 mb-1">Classification</label>
+                        <select id="classification" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg"></select>
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Employment Type</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center"><input type="radio" name="employment-type" value="full-time" class="mr-2" checked> Full-time / Part-time</label>
+                            <label class="flex items-center"><input type="radio" name="employment-type" value="casual" class="mr-2"> Casual</label>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="work-period" class="block font-medium text-gray-700 mb-1">Work Period</label>
+                        <select id="work-period" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg">
+                            <option value="hourly">Ordinary Hours</option>
+                            <option value="overtime">Overtime</option>
+                            <option value="monSatBefore6am">Monday to Saturday - before 6am</option>
+                            <option value="monSatAfter10pm">Monday to Saturday - after 10pm</option>
+                            <option value="sunday">Sunday</option>
+                            <option value="publicHoliday">Public Holiday</option>
+                        </select>
+                    </div>
+                    <div id="pay-result" class="p-4 rounded-lg text-center"></div>
+                </div>
+
+                <!-- Allowance Calculator -->
+                <div id="allowance-calculator" class="space-y-4 pt-4 border-t">
+                     <h3 class="text-xl font-semibold text-gray-700">Allowance Calculator</h3>
+                     <div class="flex items-center gap-4">
+                        <label for="vehicle-km" class="font-medium text-gray-700">Vehicle Allowance ($0.98 per km)</label>
+                        <input type="number" id="vehicle-km" placeholder="Enter km" class="w-40 p-2 border border-gray-300 rounded-lg">
+                     </div>
+                     <div id="allowance-result" class="p-3 rounded-lg text-center font-semibold"></div>
+                </div>
+            </div>
+
+            <!-- Restart Button -->
+            <div class="mt-6 text-center">
+                 <button id="restart-btn" class="hidden bg-gray-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-600 transition-colors">Start Over</button>
+            </div>
+
+        </main>
+        
+        <footer class="text-center text-xs text-gray-400 mt-8">
+            <p>Disclaimer: This tool provides a summary based on the provided document and is for guidance only. You should always refer to the full terms of the relevant award. We accept no liability for any inaccuracies.</p>
+        </footer>
+    </div>
+
+<script>
+const payData = {
+    "full-time": {
+        "Graduate professional - level 1.1 - 3 year degree": { hourly: 32.18, overtime: 32.18, monSatBefore6am: 40.23, monSatAfter10pm: 40.23, sunday: 48.27, publicHoliday: 48.27 },
+        "Graduate professional - level 1.1 - 4 or 5 year degree": { hourly: 33.01, overtime: 33.01, monSatBefore6am: 41.26, monSatAfter10pm: 41.26, sunday: 49.52, publicHoliday: 49.52 },
+        "Graduate professional - level 1.2": { hourly: 33.56, overtime: 33.56, monSatBefore6am: 41.95, monSatAfter10pm: 41.95, sunday: 50.34, publicHoliday: 50.34 },
+        "Graduate professional - level 1.3": { hourly: 34.96, overtime: 34.96, monSatBefore6am: 43.70, monSatAfter10pm: 43.70, sunday: 52.44, publicHoliday: 52.44 },
+        "Graduate professional - level 1.4": { hourly: 36.73, overtime: 36.73, monSatBefore6am: 45.91, monSatAfter10pm: 45.91, sunday: 55.10, publicHoliday: 55.10 },
+        "Experienced professional/quality auditor - level 2": { hourly: 37.97, overtime: 37.97, monSatBefore6am: 47.46, monSatAfter10pm: 47.46, sunday: 56.96, publicHoliday: 56.96 },
+        "Professional/senior (lead) quality auditor - level 3": { hourly: 41.49, overtime: 41.49, monSatBefore6am: 51.86, monSatAfter10pm: 51.86, sunday: 62.24, publicHoliday: 62.24 },
+        "Professional - level 4": { hourly: 46.80, overtime: 46.80, monSatBefore6am: 58.50, monSatAfter10pm: 58.50, sunday: 70.20, publicHoliday: 70.20 },
+        "Graduate professional medical research employee - level 1 - pay point 1.1 (3 year degree)": { hourly: 32.18, overtime: 32.18, monSatBefore6am: 40.23, monSatAfter10pm: 40.23, sunday: 48.27, publicHoliday: 48.27 },
+        "Graduate professional medical research employee - level 1 - pay point 1.1 (4 or 5 year degree)": { hourly: 33.01, overtime: 33.01, monSatBefore6am: 41.26, monSatAfter10pm: 41.26, sunday: 49.52, publicHoliday: 49.52 },
+        "Graduate professional medical research employee - level 1 - pay point 1.2": { hourly: 33.56, overtime: 33.56, monSatBefore6am: 41.95, monSatAfter10pm: 41.95, sunday: 50.34, publicHoliday: 50.34 },
+        "Graduate professional medical research employee - level 1 - pay point 1.3": { hourly: 34.96, overtime: 34.96, monSatBefore6am: 43.70, monSatAfter10pm: 43.70, sunday: 52.44, publicHoliday: 52.44 },
+        "Graduate professional medical research employee - level 1 - pay point 1.4": { hourly: 36.73, overtime: 36.73, monSatBefore6am: 45.91, monSatAfter10pm: 45.91, sunday: 55.10, publicHoliday: 55.10 },
+        "Experienced professional medical research employee - level 2": { hourly: 37.97, overtime: 37.97, monSatBefore6am: 47.46, monSatAfter10pm: 47.46, sunday: 56.96, publicHoliday: 56.96 },
+        "Experienced medical research employee - level 3": { hourly: 41.49, overtime: 41.49, monSatBefore6am: 51.86, monSatAfter10pm: 51.86, sunday: 62.24, publicHoliday: 62.24 },
+        "Experienced medical research employee - level 4": { hourly: 46.80, overtime: 46.80, monSatBefore6am: 58.50, monSatAfter10pm: 58.50, sunday: 70.20, publicHoliday: 70.20 },
+        "Experienced medical research employee - level 5": { hourly: 56.38, overtime: 56.38, monSatBefore6am: 70.48, monSatAfter10pm: 70.48, sunday: 84.57, publicHoliday: 84.57 }
+    },
+    "casual": {
+        // Rates are base * 1.25, penalties applied to loaded rate
+        "Graduate professional - level 1.1 - 3 year degree": { hourly: 40.23, overtime: 40.23, monSatBefore6am: 50.29, monSatAfter10pm: 50.29, sunday: 60.35, publicHoliday: 60.35 },
+        "Graduate professional - level 1.1 - 4 or 5 year degree": { hourly: 41.26, overtime: 41.26, monSatBefore6am: 51.58, monSatAfter10pm: 51.58, sunday: 61.89, publicHoliday: 61.89 },
+        "Graduate professional - level 1.2": { hourly: 41.95, overtime: 41.95, monSatBefore6am: 52.44, monSatAfter10pm: 52.44, sunday: 62.93, publicHoliday: 62.93 },
+        "Graduate professional - level 1.3": { hourly: 43.70, overtime: 43.70, monSatBefore6am: 54.63, monSatAfter10pm: 54.63, sunday: 65.55, publicHoliday: 65.55 },
+        "Graduate professional - level 1.4": { hourly: 45.91, overtime: 45.91, monSatBefore6am: 57.39, monSatAfter10pm: 57.39, sunday: 68.87, publicHoliday: 68.87 },
+        "Experienced professional/quality auditor - level 2": { hourly: 47.46, overtime: 47.46, monSatBefore6am: 59.33, monSatAfter10pm: 59.33, sunday: 71.19, publicHoliday: 71.19 },
+        "Professional/senior (lead) quality auditor - level 3": { hourly: 51.86, overtime: 51.86, monSatBefore6am: 64.83, monSatAfter10pm: 64.83, sunday: 77.79, publicHoliday: 77.79 },
+        "Professional - level 4": { hourly: 58.50, overtime: 58.50, monSatBefore6am: 73.13, monSatAfter10pm: 73.13, sunday: 87.75, publicHoliday: 87.75 },
+        "Graduate professional medical research employee - level 1 - pay point 1.1 (3 year degree)": { hourly: 40.23, overtime: 40.23, monSatBefore6am: 50.29, monSatAfter10pm: 50.29, sunday: 60.35, publicHoliday: 60.35 },
+        "Graduate professional medical research employee - level 1 - pay point 1.1 (4 or 5 year degree)": { hourly: 41.26, overtime: 41.26, monSatBefore6am: 51.58, monSatAfter10pm: 51.58, sunday: 61.89, publicHoliday: 61.89 },
+        "Graduate professional medical research employee - level 1 - pay point 1.2": { hourly: 41.95, overtime: 41.95, monSatBefore6am: 52.44, monSatAfter10pm: 52.44, sunday: 62.93, publicHoliday: 62.93 },
+        "Graduate professional medical research employee - level 1 - pay point 1.3": { hourly: 43.70, overtime: 43.70, monSatBefore6am: 54.63, monSatAfter10pm: 54.63, sunday: 65.55, publicHoliday: 65.55 },
+        "Graduate professional medical research employee - level 1 - pay point 1.4": { hourly: 45.91, overtime: 45.91, monSatBefore6am: 57.39, monSatAfter10pm: 57.39, sunday: 68.87, publicHoliday: 68.87 },
+        "Experienced professional medical research employee - level 2": { hourly: 47.46, overtime: 47.46, monSatBefore6am: 59.33, monSatAfter10pm: 59.33, sunday: 71.19, publicHoliday: 71.19 },
+        "Experienced medical research employee - level 3": { hourly: 51.86, overtime: 51.86, monSatBefore6am: 64.83, monSatAfter10pm: 64.83, sunday: 77.79, publicHoliday: 77.79 },
+        "Experienced medical research employee - level 4": { hourly: 58.50, overtime: 58.50, monSatBefore6am: 73.13, monSatAfter10pm: 73.13, sunday: 87.75, publicHoliday: 87.75 },
+        "Experienced medical research employee - level 5": { hourly: 70.48, overtime: 70.48, monSatBefore6am: 88.10, monSatAfter10pm: 88.10, sunday: 105.72, publicHoliday: 105.72 }
+    }
+};
+
+const classificationSelect = document.getElementById('classification');
+Object.keys(payData['full-time']).forEach(classification => {
+    const option = document.createElement('option');
+    option.value = classification;
+    option.textContent = classification;
+    classificationSelect.appendChild(option);
+});
+
+const elements = {
+    steps: document.querySelectorAll('.step-card'),
+    restartBtn: document.getElementById('restart-btn'),
+    isItEmployee: document.getElementById('is-it-employee'),
+    isQualified: document.getElementById('is-qualified'),
+    awardResult: document.getElementById('award-result'),
+    payCalculator: document.getElementById('pay-calculator'),
+    payResult: document.getElementById('pay-result'),
+    allowanceResult: document.getElementById('allowance-result'),
+    vehicleKm: document.getElementById('vehicle-km'),
+    container: document.getElementById('calculator-container')
+};
+
+let currentStep = 1;
+const state = {};
+
+function showStep(stepId) {
+    elements.steps.forEach(step => step.classList.remove('active'));
+    document.getElementById(stepId).classList.add('active');
+}
+
+function showResult(awardName, description, isProfessional = false) {
+    elements.awardResult.innerHTML = `
+        <h3 class="text-lg font-semibold">${awardName}</h3>
+        <p class="text-gray-600 mt-1">${description}</p>`;
+    
+    if (isProfessional) {
+        elements.awardResult.className = 'p-4 rounded-lg result-box';
+        elements.payCalculator.style.display = 'block';
+        updatePayCalculation();
+    } else {
+        elements.awardResult.className = 'p-4 rounded-lg info-box';
+        elements.payCalculator.style.display = 'none';
+    }
+    showStep('result-section');
+    elements.restartBtn.style.display = 'inline-block';
+}
+
+function addQuestion(id, label, description, options) {
+    const newStep = document.createElement('div');
+    newStep.id = `step-${id}`;
+    newStep.className = 'step-card space-y-4';
+    
+    let optionsHtml = '<option value="" selected disabled>Select an option...</option>';
+    options.forEach(opt => {
+        optionsHtml += `<option value="${opt.value}">${opt.text}</option>`;
+    });
+
+    newStep.innerHTML = `
+        <label for="select-${id}" class="block text-lg font-semibold text-gray-700">${label}</label>
+        <p class="text-sm text-gray-500">${description}</p>
+        <select id="select-${id}" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            ${optionsHtml}
+        </select>`;
+    
+    elements.container.insertBefore(newStep, document.getElementById('result-section'));
+    elements.steps = document.querySelectorAll('.step-card'); // Refresh node list
+    
+    const newSelect = document.getElementById(`select-${id}`);
+    newSelect.addEventListener('change', (e) => handleDynamicChange(id, e.target.value));
+    return newSelect;
+}
+
+function handleDynamicChange(id, value) {
+    state[id] = value;
+    // This is where the decision tree logic for dynamic questions would go.
+    // We'll follow the provided rule base.
+    
+    // Qualified IT Employee Path
+    if (id === 'qualified-industry' && value === 'yes') {
+        showResult(
+            "Professional Employees Award [MA000065]",
+            "The employee appears to be covered as they are a qualified IT employee working for an employer in the IT or Telecommunications Services industry.",
+            true
+        );
+    } else if (id === 'qualified-industry' && value === 'no') {
+        addQuestion(
+            'qualified-clerical',
+            'Is the employee\'s role mainly clerical or administrative?',
+            'This is not common for qualified IT employees but can occur.',
+            [{ value: 'yes', text: 'Yes' }, { value: 'no', text: 'No' }]
+        );
+        showStep('step-qualified-clerical');
+    } else if (id === 'qualified-clerical' && value === 'yes') {
+        showResult(
+            "Clerks Award",
+            "A qualified IT employee not covered by an industry award whose role is mainly clerical may be covered by the Clerks Award."
+        );
+    } else if (id === 'qualified-clerical' && value === 'no') {
+         showResult(
+            "Potentially Award Free or covered by another Industry Award",
+            "A qualified IT employee not covered by the Professional or Clerks awards may be award free, or covered by another industry-specific award (e.g., Banking, Finance and Insurance Award) if applicable."
+        );
+    }
+    
+    // Unqualified IT Employee Path
+    else if (id === 'unqualified-industry' && value === 'business') {
+        showResult(
+            "Business Equipment Award",
+            "Unqualified IT employees working for employers in the business equipment industry (e.g., selling, installing computers) may be covered by this award."
+        );
+    } else if (id === 'unqualified-industry' && value === 'telecom') {
+         showResult(
+            "Telecommunications Services Award",
+            "Unqualified IT employees engaged as telecommunications technicians in the telecommunications industry may be covered by this award."
+        );
+    } else if (id === 'unqualified-industry' && value === 'bfi') {
+         showResult(
+            "Banking, Finance and Insurance Award",
+            "Unqualified IT employees working for employers in the banking, finance, or insurance industries may be covered by this award."
+        );
+    } else if (id === 'unqualified-industry' && value === 'none') {
+        addQuestion(
+            'unqualified-clerical',
+            'Is the employee\'s role mainly clerical or administrative?',
+            'Determine if the Clerks award may apply.',
+            [{ value: 'yes', text: 'Yes' }, { value: 'no',text: 'No' }]
+        );
+        showStep('step-unqualified-clerical');
+    } else if (id === 'unqualified-clerical' && value === 'yes') {
+        showResult(
+            "Clerks Award",
+            "An unqualified IT employee not covered by an industry award whose role is mainly clerical may be covered by the Clerks Award."
+        );
+    } else if (id === 'unqualified-clerical' && value === 'no') {
+        showResult(
+            "Miscellaneous Award or Award Free",
+            "An unqualified IT employee not covered by an industry or other occupational award may be covered by the Miscellaneous Award, unless they are a managerial employee. Otherwise, they are award free."
+        );
+    }
+}
+
+
+elements.isItEmployee.addEventListener('change', (e) => {
+    if (e.target.value === 'yes') {
+        showStep('step-it-qualified');
+    } else {
+        showResult(
+            "Professional Employees Award [MA000065]",
+            "The employee is not in an IT role, but falls under another professional category covered by this award (e.g., Medical Research, Quality Auditing).",
+            true
+        );
+    }
+});
+
+elements.isQualified.addEventListener('change', (e) => {
+    if (e.target.value === 'yes') {
+        addQuestion(
+            'qualified-industry',
+            '3. Does the employer operate in the IT or Telecommunications Services industry?',
+            'This determines industry coverage under the Professional Award.',
+            [{ value: 'yes', text: 'Yes' }, { value: 'no', text: 'No' }]
+        );
+        showStep('step-qualified-industry');
+    } else {
+        addQuestion(
+            'unqualified-industry',
+            '3. In which industry does the employer operate?',
+            'This helps determine if another industry award applies to the unqualified IT employee.',
+            [
+                { value: 'business', text: 'Business Equipment (selling/installing computers)' },
+                { value: 'telecom', text: 'Telecommunications' },
+                { value: 'bfi', text: 'Banking, Finance, or Insurance' },
+                { value: 'none', text: 'None of the above' }
+            ]
+        );
+        showStep('step-unqualified-industry');
+    }
+});
+
+function updatePayCalculation() {
+    const classification = document.getElementById('classification').value;
+    const employmentType = document.querySelector('input[name="employment-type"]:checked').value;
+    const workPeriod = document.getElementById('work-period').value;
+    
+    const rate = payData[employmentType]?.[classification]?.[workPeriod];
+    
+    if (rate) {
+        elements.payResult.innerHTML = `Calculated Hourly Rate: <span class="text-2xl font-bold text-green-700">$${rate.toFixed(2)}</span>`;
+        elements.payResult.className = 'p-4 rounded-lg result-box';
+    } else {
+        elements.payResult.innerHTML = `Rate not found for selected combination.`;
+        elements.payResult.className = 'p-4 rounded-lg error-box';
+    }
+}
+
+function updateAllowance() {
+    const km = parseFloat(elements.vehicleKm.value) || 0;
+    if (km > 0) {
+        const allowance = km * 0.98;
+        elements.allowanceResult.innerHTML = `Vehicle Allowance: <span class="text-xl">$${allowance.toFixed(2)}</span>`;
+        elements.allowanceResult.className = 'p-3 rounded-lg result-box';
+    } else {
+        elements.allowanceResult.innerHTML = '';
+    }
+}
+
+
+document.getElementById('pay-calculator').addEventListener('change', updatePayCalculation);
+elements.vehicleKm.addEventListener('input', updateAllowance);
+
+elements.restartBtn.addEventListener('click', () => {
+    window.location.reload();
+});
+
+</script>
+</body>
+</html>
